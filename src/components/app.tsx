@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { Button } from 'element-react-ui-components';
 import './style.scss';
+import { BarChart } from './charts';
 
 export default class App extends React.Component {
   render() {
     return (
       <div>
-        <Button>Click on me</Button>
+        <BarChart />
       </div>
     );
   }
