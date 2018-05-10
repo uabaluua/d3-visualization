@@ -6,18 +6,37 @@ class ClassGraph extends React.Component {
   private svg;
   private data = {
     nodes: [
-      {"id": "Event", "group": 0},
-      {"id": "City", "group": 1},
-      {"id": "Venue", "group": 1},
-      {"id": "Duration", "group": 1},
-      {"id": "DurationShape", "group": 2},
+      {"id": "depth-0-0", "depth": 0},
+      {"id": "depth-1-0", "depth": 1},
+      {"id": "depth-1-1", "depth": 1},
+      {"id": "depth-1-2", "depth": 1},
+      {"id": "depth-2-0", "depth": 2},
+      {"id": "depth-2-1", "depth": 2},
+      {"id": "depth-3-0", "depth": 3},
+      {"id": "depth-3-1", "depth": 3},
+      {"id": "depth-3-2", "depth": 3},
+      {"id": "depth-4-0", "depth": 4},
+      {"id": "depth-4-1", "depth": 4},
+      {"id": "depth-5-0", "depth": 5},
+      {"id": "depth-5-1", "depth": 5},
+      {"id": "depth-6-0", "depth": 6},
+      {"id": "depth-6-1", "depth": 6},
     ],
     links: [
-      {"source": "Event", "target": "City", "value": 1},
-      {"source": "Event", "target": "Venue", "value": 1},
-      {"source": "City", "target": "Venue", "value": 1},
-      {"source": "Event", "target": "Duration", "value": 1},
-      {"source": "DurationShape", "target": "Duration", "value": 1},
+      {"source": "depth-0-0", "target": "depth-1-0", "value": 1},
+      {"source": "depth-0-0", "target": "depth-1-1", "value": 1},
+      {"source": "depth-0-0", "target": "depth-1-2", "value": 1},
+      {"source": "depth-1-2", "target": "depth-2-0", "value": 1},
+      {"source": "depth-1-2", "target": "depth-2-1", "value": 1},
+      {"source": "depth-2-0", "target": "depth-3-0", "value": 1},
+      {"source": "depth-2-0", "target": "depth-3-1", "value": 1},
+      {"source": "depth-2-0", "target": "depth-3-2", "value": 1},
+      {"source": "depth-3-1", "target": "depth-4-0", "value": 1},
+      {"source": "depth-3-1", "target": "depth-4-1", "value": 1},
+      {"source": "depth-4-0", "target": "depth-5-0", "value": 1},
+      {"source": "depth-4-0", "target": "depth-5-1", "value": 1},
+      {"source": "depth-5-0", "target": "depth-6-0", "value": 1},
+      {"source": "depth-5-0", "target": "depth-6-1", "value": 1},
     ]
   };
 
@@ -41,18 +60,23 @@ class ClassGraph extends React.Component {
       .attr("stroke-width", (d: any) => Math.sqrt(d.value));
 
     const node = this.svg.append("g")
-      .attr("class", "nodes")
-      .selectAll("circle")
+      .attr("class", "nodes").selectAll("circle")
       .data(this.data.nodes)
       .enter().append("circle")
       .attr("r", 5)
-      .attr("fill", (d: any) => color(d.group))
+      .attr("fill", (d: any) => color(d.depth))
       .call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
 
     node.append("title")
+      .text((d: any) => d.id);
+
+    const text = node.append('text')
+      .attr('class', 'label')
+      .attr('font-size', '20px')
+      .attr('text-anchor', 'middle')
       .text((d: any) => d.id);
 
     function ticked() {
@@ -65,6 +89,10 @@ class ClassGraph extends React.Component {
       node
         .attr("cx", (d: any) => d.x)
         .attr("cy", (d: any) => d.y);
+
+      text
+        .attr("x", (d: any) => d.x)
+        .attr("y", (d: any) => d.y);
     }
 
     function dragstarted(d) {
