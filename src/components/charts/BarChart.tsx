@@ -4,7 +4,16 @@ import * as d3 from 'd3';
 class BarChart extends React.Component {
   private element;
   private svg;
-  private data = [{
+  private x;
+  private y;
+  private g;
+  private xAxisGroup;
+  private yAxisGroup;
+  private width;
+  private height;
+  private flag = false;
+  private data = [
+    {
     name: 'test1',
     value: 420
   }, {
@@ -21,68 +30,96 @@ class BarChart extends React.Component {
     value: 50
   }];
   componentDidMount() {
+    this.init();
+  }
+  componentWillUnmount() {
+    this.svg = undefined;
+  }
+  init() {
     const margin = {top: 20, right: 10, bottom: 40, left: 70};
-    const width = 400 - margin.left - margin.right;
-    const height = 200 - margin.top - margin.bottom;
+    this.width = 400 - margin.left - margin.right;
+    this.height = 200 - margin.top - margin.bottom;
     this.svg = d3.select(this.element)
-      .attr('width', width + margin.left + margin.right)
-      .attr('height', height + margin.top + margin.bottom)
-    const g = this.svg.append('g')
+      .attr('width', this.width + margin.left + margin.right)
+      .attr('height', this.height + margin.top + margin.bottom)
+    this.g = this.svg.append('g')
       .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-    const names = this.data.map(item => item.name);
-    const max = d3.max(this.data, (d: any) => +d.value) || 440;
-    const x = d3.scaleBand()
-      .domain(names)
-      .range([0, width])
+    this.x = d3.scaleBand()
+      .range([0, this.width])
       .paddingInner(0.3)
       .paddingOuter(0.3);
 
-    const y = d3.scaleLinear()
-      .domain([0, max])
-      .range([height, 0]);
+    this.y = d3.scaleLinear()
+      .range([this.height, 0]);
 
-    const xAxis = d3.axisBottom(x);
-    g.append('g')
+    this.xAxisGroup = this.g.append('g')
       .attr('class', 'x-axis')
-      .attr('transform', `translate(0, ${height})`)
-      .call(xAxis);
+      .attr('transform', `translate(0, ${this.height})`);
 
-    const yAxis = d3.axisLeft(y).ticks(3).tickFormat((d: any) => `${d} m`);
-    g.append('g')
-      .attr('class', 'y-axis')
-      .call(yAxis);
+    this.yAxisGroup = this.g.append('g')
+      .attr('class', 'y-axis');
 
-    const rects = g.selectAll('rect').data(this.data);
+    this.update(this.data);
 
-    rects.enter()
-      .append('rect')
-      .attr('x', (d: any, i: any) => x(d.name))
-      .attr('y', (d: any) => y(d.value))
-      .attr('width', x.bandwidth)
-      .attr('height', (d: any) => height - y(+d.value))
-      .attr('fill', 'blue');
-
-    g.append('text')
+    this.g.append('text')
       .attr('class', 'x axis-label')
-      .attr('x', width / 2)
-      .attr('y', height + margin.bottom)
+      .attr('x', this.width / 2)
+      .attr('y', this.height + margin.bottom)
       .attr('font-size', '20px')
       .attr('text-anchor', 'middle')
       .text('The x title');
 
-    g.append('text')
+    this.g.append('text')
       .attr('class', 'y axis-label')
-      .attr('x', - (height / 2))
+      .attr('x', - (this.height / 2))
       .attr('y', - margin.left + 20)
       .attr('font-size', '20px')
       .attr('text-anchor', 'middle')
       .attr('transform', 'rotate(-90)')
       .text('The y title');
+
+    d3.interval(() => {
+      this.update(this.flag ? this.data : this.data.slice(1))
+      this.flag = !this.flag;
+    }, 1000);
   }
-  componentWillUnmount() {
-    this.svg = undefined;
+
+  update(data) {
+    const max = d3.max(data, (d: any) => +d.value) || 440;
+    this.x.domain(data.map(item => item.name));
+    this.y.domain([0, max]);
+    const t = d3.transition().duration(750);
+
+    const xAxis = d3.axisBottom(this.x);
+    this.xAxisGroup.transition(t).call(xAxis);
+
+    const yAxis = d3.axisLeft(this.y).ticks(3).tickFormat((d: any) => `${d} m`);
+    this.yAxisGroup.transition(t).call(yAxis);
+
+    const rects = this.g.selectAll('rect').data(data, (d) => d.name);
+
+    rects.exit().attr('fill', 'red')
+      .transition(t).attr('y', this.y(0))
+      .attr('height', 0).remove();
+
+    rects.enter()
+      .append('rect')
+      .attr('x', (d: any, i: any) => this.x(d.name))
+      .attr('width', this.x.bandwidth)
+      .attr('fill', 'blue')
+      .attr('y', (d: any) => this.y(0))
+      .attr('fill-opacity', 0)
+      .attr('height', 0)
+      .merge(rects)
+      .transition(t)
+      .attr('x', (d: any, i: any) => this.x(d.name))
+      .attr('y', (d: any) => this.y(d.value))
+      .attr('width', this.x.bandwidth)
+      .attr('height', (d: any) => this.height - this.y(+d.value))
+      .attr('fill-opacity', 1);
   }
+
   render() {
     return <svg ref={(ref) => (this.element = ref)} />
   }

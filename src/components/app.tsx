@@ -1,6 +1,10 @@
 import * as React from 'react';
 import './style.scss';
-import { BarChart, ClassGraph } from './charts';
+import {
+  // BarChart,
+  // ClassGraph,
+  BubbleChart
+} from './charts';
 
 export default class App extends React.Component {
   data = {
@@ -42,8 +46,9 @@ export default class App extends React.Component {
   render() {
     return (
       <div>
-        <ClassGraph data={this.data} width={800} height={400} r={10} />
-        <BarChart />
+        {/*<ClassGraph data={this.data} width={800} height={400} r={10} />*/}
+        {/*<BarChart />*/}
+        <BubbleChart />
       </div>
     );
   }
