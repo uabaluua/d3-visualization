@@ -31,6 +31,7 @@ class ClassGraph extends React.Component {
       {"source": "depth-2-0", "target": "depth-3-0", "value": 1},
       {"source": "depth-2-0", "target": "depth-3-1", "value": 1},
       {"source": "depth-2-0", "target": "depth-3-2", "value": 1},
+      {"source": "depth-1-2", "target": "depth-1-0", "value": 1},
       {"source": "depth-3-1", "target": "depth-4-0", "value": 1},
       {"source": "depth-3-1", "target": "depth-4-1", "value": 1},
       {"source": "depth-4-0", "target": "depth-5-0", "value": 1},
@@ -59,23 +60,25 @@ class ClassGraph extends React.Component {
       .enter().append("line")
       .attr("stroke-width", (d: any) => Math.sqrt(d.value));
 
-    const node = this.svg.append("g")
-      .attr("class", "nodes").selectAll("circle")
+    const nodes = this.svg.append("g")
+      .attr("class", "nodes").selectAll("g")
       .data(this.data.nodes)
-      .enter().append("circle")
-      .attr("r", 5)
+      .enter();
+
+    const circles = nodes.append("circle")
+      .attr("r", 10)
       .attr("fill", (d: any) => color(d.depth))
       .call(d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
 
-    node.append("title")
+    circles.append("title")
       .text((d: any) => d.id);
 
-    const text = node.append('text')
+    const text = nodes.append('text')
       .attr('class', 'label')
-      .attr('font-size', '20px')
+      .attr('font-size', '10px')
       .attr('text-anchor', 'middle')
       .text((d: any) => d.id);
 
@@ -86,13 +89,13 @@ class ClassGraph extends React.Component {
         .attr("x2", (d: any) => d.target.x)
         .attr("y2", (d: any) => d.target.y);
 
-      node
+      circles
         .attr("cx", (d: any) => d.x)
         .attr("cy", (d: any) => d.y);
 
       text
-        .attr("x", (d: any) => d.x)
-        .attr("y", (d: any) => d.y);
+        .attr("x", (d: any) => (d.x))
+        .attr("y", (d: any) => (d.y + 20));
     }
 
     function dragstarted(d) {
